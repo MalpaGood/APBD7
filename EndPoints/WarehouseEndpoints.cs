@@ -49,7 +49,7 @@ public static class WarehouseEndpoints
 
         var update = await db.UpdatedOrderFullfiledAt(order.IdOrder);
         var wstaw = await db.InsertProductToWarehouse(request.IdProduct, order.IdOrder, request.IdWarehouse);
-        var last = await db.InsertProduct(request.IdProduct, request.IdWarehouse, DateTime.Now);
+        var last = await db.GetLatestWarehouseRecordId();
         return Results.Created("", last);
     }
 }

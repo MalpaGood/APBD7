@@ -26,7 +26,7 @@ public interface IDbServiceDapper
     //Podpunkt 5
     Task<int> InsertProductToWarehouse(int id_zamówienia, int productId, int warehouseId);
     //Podpunkt 6
-    Task<int> InsertProduct(int productId, int warehouseId, DateTime createdAt);
+    Task<int?> GetLatestWarehouseRecordId();
 }
 
 public class DBServiceDapper(IConfiguration configuration) : IDbServiceDapper
@@ -210,21 +210,14 @@ public class DBServiceDapper(IConfiguration configuration) : IDbServiceDapper
     }
 
     //Podpunkt 6
-    public async Task<int> InsertProduct(int productId, int warehouseId, DateTime createdAt)
+    public async Task<int?> GetLatestWarehouseRecordId()
     {
         await using var connection = await GetConnection();
         
-        string sqlQuery = @"
-        INSERT INTO Product_Warehouse (ProductId, WarehouseId, CreatedAt) 
-        OUTPUT INSERTED.ID
-        VALUES (@ProductId, @WarehouseId, @Price, @CreatedAt);
-        ";
+        string sqlQuery = @" SELECT TOP 1 IDFROM WarehouseORDER BY CreatedAt DESC;";
+        
+        var latestId = await connection.ExecuteScalarAsync<int?>(sqlQuery);
 
-
-        var insertedId = await connection.ExecuteScalarAsync<int>(sqlQuery, 
-            new { ProductId = productId, WarehouseId = warehouseId, CreatedAt = createdAt });
-
-        return insertedId;
+        return latestId;
     }
-
 }
